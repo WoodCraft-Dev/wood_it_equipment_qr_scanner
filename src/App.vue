@@ -257,10 +257,13 @@ export default {
       // avoids to scan the same code twice in continuous scan mode
       if (data.data == this.last_code) {
         return;
+      } else {
+        if (this.last_code == null) {
+          this.last_code = data.data;
+        }
       }
-      this.last_code = data.data;
       this.hapticImpact();
-      let key = this.addToStorage(data.data);
+      let key = new Date().getTime();
       this.enrichValue(key);
 
       // Force to go back to the history screen if setting screen is open
@@ -270,11 +273,14 @@ export default {
 
       if (!this.is_continuous_scan) {
         // SOME SHIT XXX-
-        let qr_data = {
-          qr_code: data.data
+        if (data.data != this.last_code && this.last_code != null) {
+          let qr_data = {
+            equipment_id: this.last_code,
+            user_id: data.data
+          };
+          window.Telegram.WebApp.sendData(JSON.stringify(qr_data));
+          this.TMA.closeScanQrPopup();
         }
-        window.Telegram.WebApp.sendData(JSON.stringify(qr_data));
-        this.TMA.closeScanQrPopup();
       }
     },
     hapticImpact() {
